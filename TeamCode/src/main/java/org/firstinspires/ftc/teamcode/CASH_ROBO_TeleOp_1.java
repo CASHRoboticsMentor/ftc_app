@@ -51,32 +51,27 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
-@Disabled
+@TeleOp(name="CASH_ROBO_TeleOp_nc", group="Linear Opmode")
+//@Disabled
 public class CASH_ROBO_TeleOp_1 extends LinearOpMode {
 
     // Declare OpMode members.
+    Robot1Hardware         robot   = new Robot1Hardware();   // Use a Pushbot's hardware
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
-    private Servo Spin = null;
+
 
     @Override
     public void runOpMode() {
+        robot.init(hardwareMap);
+
+        robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double leftPosition;
+        double rightPosition;
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "LR1");
-        rightDrive = hardwareMap.get(DcMotor.class, "RR1");
-        Spin = hardwareMap.get (Servo.class, "Spin");
-
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -84,54 +79,37 @@ public class CASH_ROBO_TeleOp_1 extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-
             // Setup a variable for each drive wheel to save power level for telemetry
             double leftPower;
             double rightPower;
+            double driveRL;
+            double turnRL;
 
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
+            double leftCmd =  gamepad1.left_stick_y;
+            double rightCmd  =  gamepad1.right_stick_y;
 
-            // POV Mode uses left stick to go forward, and right stick to turn.
-            // - This uses basic math to combine motions and is easier to drive straight.
-            double drive =  gamepad1.left_stick_y;
-            double turn  = -gamepad1.left_stick_x;
-            leftPower    = Range.clip(drive + turn, -.2, .2) ;
-            rightPower   = Range.clip(drive - turn, -.2, .2) ;
 
-            boolean xbutton = gamepad2.x;
-            boolean ybutton = gamepad2.y;
-            boolean bbutton = gamepad2.b;
 
-            telemetry.addData("XButton Value",xbutton);
-            telemetry.addData("yButton Value",ybutton);
-            telemetry.addData("bButton Value",bbutton);
-            if(xbutton == true)
-            {
-                Spin.setPosition (0);
-            }
-            else if (ybutton == true)
-            {
-                Spin.setPosition (.35);
-            }
-            else if (bbutton == true)
-            {
-                Spin.setPosition (.75);
-            }
+            double liftCmd = -gamepad2.right_stick_y;
 
-            // Tank Mode uses one stick to control each wheel.
-            // - This requires no math, but it is hard to drive forward slowly and keep straight.
-            // leftPower  = -gamepad1.left_stick_y ;
-            // rightPower = -gamepad1.right_stick_y ;
+            leftPower    = Range.clip(leftCmd, 1, -1) ;
+            rightPower   = Range.clip(rightCmd, 1, -1) ;
 
+            telemetry.addData("Left cmd", leftCmd);
+            telemetry.addData("right cmd", rightCmd);
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
+            robot.leftDrive.setPower(leftPower );
+            robot.rightDrive.setPower(rightPower );
+            leftPosition = robot.leftDrive.getCurrentPosition();
+            rightPosition = robot.rightDrive.getCurrentPosition();
+            telemetry.addData("Left Position (counts)", leftPosition);
+            telemetry.addData("Right Position (counts)", rightPosition);
+            //liftDrive.setPower(liftCmd);
 
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.update();
+           telemetry.update();
+
+            //sleep(loopTime_ms);
         }
     }
 }
