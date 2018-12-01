@@ -29,25 +29,31 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.sun.tools.javac.tree.DCTree;
 
 /**
  * This is NOT an opmode.
  *
  * This class can be used to define all the specific hardware for a single robot.
- * In this case that robot is a Pushbot.
- * See PushbotTeleopTank_Iterative and others classes starting with "Pushbot" for usage examples.
+ * In this case that robot is a CASHBot.
+ *
  *
  * This hardware class assumes the following device names have been configured on the robot:
  * Note:  All names are lower case and some have single spaces between words.
  *
  * Motor channel:  Left  drive motor:        "left_drive"
  * Motor channel:  Right drive motor:        "right_drive"
- * Motor channel:  lifter:  "lift_arm"
+ * Motor channel:  Right drive motor:        "right_drive"
+ * Motor channel:  Right drive motor:        "right_drive"
+ * Motor channel:  Right drive motor:        "right_drive"
+
 
  */
 public class Robot1Hardware
@@ -55,13 +61,35 @@ public class Robot1Hardware
     /* Public OpMode members. */
     public DcMotor  leftDrive   = null;
     public DcMotor  rightDrive  = null;
-    public DcMotor  liftArm     = null;
-    public DcMotor  sliderDrive = null;
-//    public Servo    iconServo    = null;
+    public DcMotor  pusherDrive = null;
 
-//    public static final double MID_SERVO       =  0.5 ;
-//    public static final double ARM_UP_POWER    =  0.45 ;
-//    public static final double ARM_DOWN_POWER  = -0.45 ;
+    ///Servo Definitions
+    public Servo    iconServo    = null;
+    public Servo    pusherServo = null;
+    public Servo    right_sampler = null;
+    public Servo    left_sampler = null;
+
+    //Color Sensor
+    public ColorSensor rtSamplerColor = null;
+    public DistanceSensor rtSamplerDist = null;
+    public ColorSensor leftSamplerColor = null;
+    public DistanceSensor leftSamplerDist = null;
+
+    //CONSTANTS
+    public static final double ICON_SERVO_UP =  1;
+    public static final double ICON_SERVO_DOWN = .25;
+
+//    public static final double PUSHER_MAX_UP = 0;
+//    public static final double PUSHER_MAX_DOWN = -90;
+    public static final double PUSHER_MOTOR_MAX_DOWN = -90;
+    public static final double PUSHER_MOTOR_MAX_UP = -1;
+
+
+    public static final double RT_SAMPLER_DOWN = .74;
+    public static final double RT_SAMPLER_UP = .26;
+    public static final double LEFT_SAMPLER_DOWN = .05;
+    public static final double LEFT_SAMPLER_UP = .52;
+
 
     /* local OpMode members. */
     HardwareMap hwMap           =  null;
@@ -69,7 +97,6 @@ public class Robot1Hardware
 
     /* Constructor */
     public Robot1Hardware(){
-
     }
 
     /* Initialize standard Hardware interfaces */
@@ -80,27 +107,36 @@ public class Robot1Hardware
         // Define and Initialize Motors
         leftDrive  = hwMap.get(DcMotor.class, "left_drive");
         rightDrive = hwMap.get(DcMotor.class, "right_drive");
-        liftArm    = hwMap.get(DcMotor.class, "lift_arm");
-        sliderDrive= hwMap.get(DcMotor.class, "slider_drive");
+        pusherDrive = hwMap.get(DcMotor.class, "pusher_drive");
 
+        // Define and Initialize Servos
+        iconServo  = hwMap.get(Servo.class, "icon_servo");
+        pusherServo= hwMap.get(Servo.class, "pusher_servo");
+
+        // Sampler servo/color sensor configures
+        right_sampler= hwMap.get(Servo.class, "right_sampler");
+        rtSamplerColor=hwMap.get(ColorSensor.class,"sampler_rt");
+        rtSamplerDist=hwMap.get(DistanceSensor.class,"sampler_rt");
+
+        left_sampler= hwMap.get(Servo.class, "left_sampler");
+        leftSamplerColor=hwMap.get(ColorSensor.class,"sampler_left");
+        leftSamplerDist=hwMap.get(DistanceSensor.class,"sampler_left");
+
+        //Initilization of Motors
         leftDrive.setDirection(DcMotor.Direction.REVERSE); // Set to REVERSE if using AndyMark motors
         rightDrive.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
-        liftArm.setDirection(DcMotor.Direction.REVERSE);// Set to FORWARD if using AndyMark motors
-        sliderDrive.setDirection(DcMotor.Direction.FORWARD);
+        pusherDrive.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
 
         // Set all motors to zero power
         leftDrive.setPower(0);
         rightDrive.setPower(0);
-        liftArm.setPower(0);
-        sliderDrive.setPower(0);
+        pusherDrive.setPower(0);
 
         // Set all motors to run without encoders.
         // May want to use RUN_USING_ENCODERS if encoders are installed.
         leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        liftArm.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        sliderDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        // Define and initialize ALL installed servos.
+        pusherDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
  }
 

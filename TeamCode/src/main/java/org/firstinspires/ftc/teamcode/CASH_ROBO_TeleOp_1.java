@@ -29,7 +29,6 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -39,77 +38,172 @@ import com.qualcomm.robotcore.util.Range;
 
 
 /**
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ * This file contains the Teleop mode that controls CASHBot
  */
 
-@TeleOp(name="CASH_ROBO_TeleOp_nc", group="Linear Opmode")
+@TeleOp(name="CASH_ROBO_TeleOp_nc1", group="Linear Opmode")
 //@Disabled
 public class CASH_ROBO_TeleOp_1 extends LinearOpMode {
 
     // Declare OpMode members.
-    Robot1Hardware         robot   = new Robot1Hardware();   // Use a Pushbot's hardware
+    Robot1Hardware         robot   = new Robot1Hardware();   // Use a CASHBot's hardware
     private ElapsedTime runtime = new ElapsedTime();
-
+    private boolean prvLeftSamplerUp = true;  //false is up
+    private boolean prvRightSamplerUp = true;  // false is up
 
     @Override
     public void runOpMode() {
         robot.init(hardwareMap);
 
-        robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        double slope = (robot.PUSHER_MOTOR_MAX_DOWN-robot.PUSHER_MOTOR_MAX_UP)/(2);
+        double bIntercept = - slope;
 
+        //We want to initilize with pusher up.
+        //robot.pusherServo.setPosition(robot.PUSHER_MAX_UP);
+
+        //Feedback from the left and right motors for control
         double leftPosition;
         double rightPosition;
 
+        //Variables to drive the left and right drive motors
+        double leftPower;
+        double rightPower;
+
+        double turnRate = .5;
+        //button inputs for using samplers to get gems.
+
+        driveServoToPosition(robot.RT_SAMPLER_UP,robot.right_sampler);
+        driveServoToPosition(robot.LEFT_SAMPLER_UP,robot.left_sampler);
+        robot.pusherDrive.setTargetPosition((int)robot.PUSHER_MOTOR_MAX_UP);
+        double currentPusherPos = robot.pusherDrive.getCurrentPosition();
+        driveServoToPosition(robot.ICON_SERVO_UP,robot.iconServo);
+
+        //float r_samplerRate = gamepad2.right_stick_x;
+        float pusherRate=0;
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+
         runtime.reset();
+
+        double startTime ;
+
+        //////////////////////////TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEESSSSSSSSSST
+        robot.leftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.rightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.pusherDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            startTime = runtime.milliseconds();
             // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
-            double driveRL;
-            double turnRL;
+//            double rightSplPosition = gamepad2.right_stick_y;
+//            rightSplPosition=Range.clip(rightSplPosition, -1.0, 1.0) ;
+//            driveServoToPosition(rightSplPosition,robot.iconServo);
+//            telemetry.addData("rightPos",robot.iconServo.getPosition());
+//            double leftSplPosition = gamepad2.right_stick_x;
+//            leftSplPosition=Range.clip(leftSplPosition, 0, 1.0) ;
+//            driveServoToPosition(leftSplPosition,robot.left_sampler);
+//            telemetry.addData("leftPos",robot.left_sampler.getPosition());
 
-            double leftCmd =  gamepad1.left_stick_y;
-            double rightCmd  =  gamepad1.right_stick_y;
+           // IF WE NEED TO USE MOTOR THIS WILL HAVE TO CHANGE
+            pusherRate = gamepad2.left_stick_y;
+            double pusherChange = Range.clip(pusherRate, -1.0, 1.0) ;
+
+            double newPosition = currentPusherPos + pusherChange*4;
+            currentPusherPos = newPosition;
+            telemetry.addData("newPosition: ",(int)newPosition);
+            robot.pusherDrive.setTargetPosition((int)newPosition);
+            robot.pusherDrive.setPower(1);
+            //robot.pusherDrive.setPower(pusherPwr);
+            telemetry.addData("Pusher Position",robot.pusherDrive.getCurrentPosition());
+           // driveServoByRate(pusherRate,robot.pusherServo);
 
 
+            //Control of Left Sampler
+//            if (prvLeftSamplerUp && leftSplToggle){
+//                //down
+//                driveServoToPosition(robot.LEFT_SAMPLER_DOWN,robot.left_sampler);
+//                prvLeftSamplerUp = false; //true
+//            }
+//            else {
+//                //left up
+//                driveServoToPosition(robot.LEFT_SAMPLER_UP,robot.left_sampler);
+//                prvLeftSamplerUp = true; //true
+//            }
+//
+//            //Control of Right Sampler
+//            if (prvRightSamplerUp && rightSplToggle){
+//                //down
+//                driveServoToPosition(robot.RT_SAMPLER_DOWN,robot.right_sampler);
+//                prvRightSamplerUp = false; //true
+//            }
+//            else{
+//                //right up
+//                driveServoToPosition(robot.RT_SAMPLER_UP,robot.right_sampler);
+//                prvRightSamplerUp = true; //true
+//            }
+//            driveServoToPosition(robot.RT_SAMPLER_DOWN,robot.right_sampler);
 
-            double liftCmd = -gamepad2.right_stick_y;
-
-            leftPower    = Range.clip(leftCmd, 1, -1) ;
-            rightPower   = Range.clip(rightCmd, 1, -1) ;
-
-            telemetry.addData("Left cmd", leftCmd);
-            telemetry.addData("right cmd", rightCmd);
             // Send calculated power to wheels
+            double drive = -gamepad1.left_stick_y;
+            double turn  =  gamepad1.right_stick_x;
+            turn = Range.clip(turn, -turnRate,turnRate);
+
+            leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
+            rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+
+
             robot.leftDrive.setPower(leftPower );
             robot.rightDrive.setPower(rightPower );
             leftPosition = robot.leftDrive.getCurrentPosition();
             rightPosition = robot.rightDrive.getCurrentPosition();
             telemetry.addData("Left Position (counts)", leftPosition);
             telemetry.addData("Right Position (counts)", rightPosition);
-            //liftDrive.setPower(liftCmd);
 
-            // Show the elapsed game time and wheel power.
-           telemetry.update();
+            telemetry.addData("looptime",runtime.milliseconds()-startTime);
+            telemetry.update();
 
-            //sleep(loopTime_ms);
+            sleep(50);
         }
+    }
+
+       public void driveServoByRate(float desDegreesPerSec, Servo servo)
+    {
+
+        telemetry.addData("InIconDriver!",servo.getPosition());
+        double MaxDegreesPerSec = .05;
+        double cmd = MaxDegreesPerSec * desDegreesPerSec;
+        double newcmd;
+        newcmd = servo.getPosition() + cmd;
+        if (newcmd >=1)
+        {
+            newcmd = 1;
+        }
+        else if (newcmd <=0)
+        {
+            newcmd = 0;
+        }
+        servo.setPosition(newcmd);
+    }
+
+    public void driveServoToPosition(double pos, Servo servo)
+    {
+
+        servo.setPosition(pos);
+        double error = pos - servo.getPosition();
+        //telemetry.addData("waiting To Get to Position: ",error);
+        //while(Math.abs(error) <= .01 )
+        {
+            //telemetry.addLine("waiting To Get to Position: ");
+            error = pos - servo.getPosition();
+        }
+    }
+
+    public void driveMotorByRate(double speed)
+    {
+
     }
 }
